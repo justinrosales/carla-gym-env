@@ -1,0 +1,21 @@
+activate conda env
+source ~/persistent/miniconda3/bin/activate
+
+run.py logs to ./tensorboard/ (run fom carla_gym directory)
+tensorboard --logdir=./tensorboard/ --port=6006
+
+best used for training (run without windiw)
+./CarlaUE4.sh -RenderOffScreen -opengl -benchmark -fps=20
+
+
+terminal shortcuts
+
+# Terminal 1: CARLA
+./CarlaUE4.sh -RenderOffScreen -opengl -benchmark -fps=20
+
+# Terminal 2: Training (one-liner)
+source ~/persistent/miniconda3/bin/activate && conda activate carla && cd ~/persistent/carla-gym-env && python run.py
+
+# Terminal 3: TensorBoard (one-liner)
+conda activate carla && cd ~/persistent/carla-gym-env && tensorboard --logdir=./tensorboard/ --port=6006
+
