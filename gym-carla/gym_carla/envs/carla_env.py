@@ -230,8 +230,8 @@ class CarlaEnv(gym.Env):
     self.radar_list = o3d.geometry.PointCloud()
     self.radar_sensor.listen(lambda data: get_radar_data(data, self.radar_list))
     def get_radar_data(data, point_list):
-      COOL_RANGE = np.linspace[0.0, 1.0, VIRIDIS.shape[0]]
-      COOL = np.array(cm.get_cmap('winter')[COOL_RANGE])
+      COOL_RANGE = np.linspace(0.0, 1.0, VIRIDIS.shape[0])
+      COOL = np.array(cm.get_cmap('winter')(COOL_RANGE))
       COOL = COOL[:,:3]
       radar_data = np.zeros((len(data), 4))
 
@@ -298,17 +298,6 @@ class CarlaEnv(gym.Env):
     thread_open3d = threading.Thread(target=run_open3d)
     thread_open3d.start()
 
-
-    # Add camera sensors
-    self.camera_sensor = self.world.spawn_actor(self.camera_bp, self.camera_trans, attach_to=self.ego)
-    self.camera_sensor.listen(lambda data: get_camera_img(data))
-    self.camera_sensor2 = self.world.spawn_actor(self.camera_bp, self.camera_trans2, attach_to=self.ego)
-    self.camera_sensor2.listen(lambda data: get_camera_img2(data))
-    self.camera_sensor3 = self.world.spawn_actor(self.camera_bp, self.camera_trans3, attach_to=self.ego)
-    self.camera_sensor3.listen(lambda data: get_camera_img3(data))
-    self.camera_sensor4 = self.world.spawn_actor(self.camera_bp, self.camera_trans4, attach_to=self.ego)
-    self.camera_sensor4.listen(lambda data: get_camera_img4(data))
-
     def get_camera_img(data):
       array = np.frombuffer(data.raw_data, dtype = np.dtype("uint8"))
       array = np.reshape(array, (data.height, data.width, 4))
@@ -336,6 +325,17 @@ class CarlaEnv(gym.Env):
       array = array[:, :, :3]
       array = array[:, :, ::-1]
       self.camera_img[3] = array
+
+    # Add camera sensors
+    self.camera_sensor = self.world.spawn_actor(self.camera_bp, self.camera_trans, attach_to=self.ego)
+    self.camera_sensor.listen(lambda data: get_camera_img(data))
+    self.camera_sensor2 = self.world.spawn_actor(self.camera_bp, self.camera_trans2, attach_to=self.ego)
+    self.camera_sensor2.listen(lambda data: get_camera_img2(data))
+    self.camera_sensor3 = self.world.spawn_actor(self.camera_bp, self.camera_trans3, attach_to=self.ego)
+    self.camera_sensor3.listen(lambda data: get_camera_img3(data))
+    self.camera_sensor4 = self.world.spawn_actor(self.camera_bp, self.camera_trans4, attach_to=self.ego)
+    self.camera_sensor4.listen(lambda data: get_camera_img4(data))
+
     # Update timesteps
     self.time_step=0
     self.reset_step+=1
