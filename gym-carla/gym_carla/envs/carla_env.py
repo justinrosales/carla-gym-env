@@ -152,16 +152,22 @@ class CarlaEnv(gym.Env):
     self._init_renderer()
 
   def reset(self):
-    # Clear sensor objects
-    self.collision_sensor = None
-    self.lidar_sensor = None
-    self.camera_sensor = None
-    self.camera2_sensor = None
-    self.camera3_sensor = None
-    self.camera4_sensor = None
+    # Properly stop and destroy existing sensors before clearing references
+    for sensor in ['collision_sensor', 'lidar_sensor', 'radar_sensor',
+                   'camera_sensor', 'camera_sensor2', 'camera_sensor3', 'camera_sensor4']:
+      if hasattr(self, sensor) and getattr(self, sensor) is not None:
+        try:
+          getattr(self, sensor).stop()
+        except:
+          pass
+        try:
+          getattr(self, sensor).destroy()
+        except:
+          pass
+        setattr(self, sensor, None)
 
-    # Delete sensors, vehicles and walkers
-    self._clear_all_actors(['sensor.other.collision', 'sensor.lidar.ray_cast', 'sensor.camera.rgb', 'vehicle.*', 'controller.ai.walker', 'walker.*'])
+    # Delete sensors, vehicles and walkers (including radar)
+    self._clear_all_actors(['sensor.other.collision', 'sensor.lidar.ray_cast', 'sensor.camera.rgb', 'sensor.other.radar', 'vehicle.*', 'controller.ai.walker', 'walker.*'])
 
     # Disable sync mode
     self._set_synchronous_mode(False)
