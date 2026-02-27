@@ -714,6 +714,9 @@ class CarlaEnv(gym.Env):
     for actor_filter in actor_filters:
       for actor in self.world.get_actors().filter(actor_filter):
         if actor.is_alive:
-          if actor.type_id == 'controller.ai.walker':
-            actor.stop()
-          actor.destroy()
+          try:
+            if actor.type_id == 'controller.ai.walker':
+              actor.stop()
+            actor.destroy()
+          except RuntimeError:
+            pass
