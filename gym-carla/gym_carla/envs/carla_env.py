@@ -661,6 +661,9 @@ class CarlaEnv(gym.Env):
     if abs(dis) > self.out_lane_thres:
       r_out = -1
 
+    # continuous lane-centering reward (new: encourages staying near center)
+    r_lane_center = max(0, 1.0 - abs(dis) / self.out_lane_thres)
+
     # longitudinal speed
     lspeed = np.array([v.x, v.y])
     lspeed_lon = np.dot(lspeed, w)
@@ -673,7 +676,15 @@ class CarlaEnv(gym.Env):
     # cost for lateral acceleration
     r_lat = - abs(self.ego.get_control().steer) * lspeed_lon**2
 
-    r = 200*r_collision + 5*r_speed + 10*r_fast + 2*r_out + r_steer*5 + 0.2*r_lat - 0.1
+    # Rebalanced reward weights for better gradient signal:
+    # - Reduced collision penalty (200 -> 100) to avoid extreme swings
+    # - Reduced speed weight (5 -> 1) as secondary objective
+    # - Increased out-of-lane penalty (2 -> 5) for safer driving
+    # - Reduced steering penalty (5 -> 2) to allow learning to steer
+    # - Added lane-centering bonus for continuous feedback
+    # - Changed time penalty (-0.1) to survival bonus (+0.1)
+    r = (100*r_collision + 1*r_speed + 5*r_fast + 5*r_out
+         + r_steer*2 + 0.1*r_lat + 1.0*r_lane_center + 0.1)
 
     return r
 
